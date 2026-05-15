@@ -50,34 +50,44 @@ Identifier = {Letter}({Letter}|{Digit}|_){0,31}
     {WhiteSpace}    { /* Não faz nada */ }
 
     /* TODO 3: Palavras Reservadas (if, then, else, while) */
-    "if"            { return symbol(sym.IF); }
-    "then"          { return symbol(sym.THEN); }
-    /* Adicione as demais aqui... */
+    "if"            { return token(Tag.IF, yytext()); }
+    "then"          { return token(Tag.THEN, yytext()); }
+    "else"          { return token(Tag.ELSE, yytext()); }
+    "while"         { return token(Tag.WHILE, yytext()); }
 
     /* TODO 4: Pontuação ( ) { } ; */
-    \(              { return symbol(sym.LPAREN); }
-    /* Adicione as demais aqui... */
+    "("             { return token(Tag.LPAREN, yytext()); }
+    ")"             { return token(Tag.RPAREN, yytext()); }
+    "{"             { return token(Tag.LBRACE, yytext()); }
+    "}"             { return token(Tag.RBRACE, yytext()); }
+    ";"             { return token(Tag.SEMICOLON, yytext()); }
 
     /* TODO 5: Operadores de Atribuição e Relacionais (=, ==, !=, <, >, <=, >=) */
     /* CUIDADO COM A ORDEM! O JFlex casa a regra que aparece primeiro se houver empate de tamanho. */
-    /* Coloque os operadores duplos antes dos simples! */
-    "="             { return symbol(sym.ASSIGN); }
-    /* Adicione os relacionais aqui e retorne Tag.REL_OP ... */
+    "=="            { return token(Tag.REL_OP, yytext()); }
+    "="             { return token(Tag.ASSIGN, yytext()); }
+    "!="            { return token(Tag.REL_OP, yytext()); }
+    "<="            { return token(Tag.REL_OP, yytext()); }
+    ">="            { return token(Tag.REL_OP, yytext()); }
+    "<"             { return token(Tag.REL_OP, yytext()); }
+    ">"             { return token(Tag.REL_OP, yytext()); }
 
     /* TODO 6: Operadores Matemáticos (+, -, *, /, %) */
     /* Dica: "+" | "-" retornam Tag.ADD_OP. Os outros retornam Tag.MUL_OP */
-    "+" | "-"       { return symbol(sym.ADD_OP, yytext()); }
-    /* Adicione as multiplicações aqui... */
+    "+" | "-"       { return token(Tag.ADD_OP, yytext()); }
+    "*" | "/" | "%" { return token(Tag.MUL_OP, yytext()); }
 
     /* Regras para as Macros */
-    {Identifier}    { return symbol(sym.ID, yytext()); }
-    {Number}        { return symbol(sym.NUMBER, yytext()); }
+    {Identifier}    { return token(Tag.ID, yytext()); }
+    {Number}        { return token(Tag.NUMBER, yytext()); }
 
     /* Identificadores grandes demais (Captura o erro) */
-   {OversizedIdentifier} { throw new RuntimeException("Erro Léxico: Identificador gigante -> " + yytext()); }
+    {Letter}({Letter}|{Digit}|_){32} { 
+        return token(Tag.ERROR, "Erro Léxico: Identificador ultrapassou 32 caracteres -> " + yytext()); 
+    }
 
     /* Fallback: Qualquer outro caractere não reconhecido gera um Erro */
-    .   {throw new RuntimeException("Erro Léxico: Caractere Ilegal -> " + yytext()); }
+    .               { return token(Tag.ERROR, "Erro Léxico: Caractere Ilegal -> " + yytext()); }
 }
 
 /* Regra para o Final do Arquivo */
